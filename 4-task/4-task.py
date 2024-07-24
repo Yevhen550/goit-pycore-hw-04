@@ -1,78 +1,74 @@
-import sys
-
-
 def parse_input(user_input):
     cmd, *args = user_input.split()
     cmd = cmd.strip().lower()
-    return cmd, args
+    return cmd, *args
 
 
-def add_contact(contacts, name, phone):
+def add_contact(args, contacts):
+    name, phone = args
     contacts[name] = phone
-    print("Contact added.")
+    return "Contact added."
 
 
-def change_contact(contacts, name, new_phone):
+def change_contact(args, contacts):
+    name, phone = args
+    contacts[name] = phone
+    return "Contact updated."
+
+
+def show_phone(args, contacts):
+    name = args[0]
     if name in contacts:
-        contacts[name] = new_phone
-        print("Номер телефону оновлено.")
+        return contacts[name]
     else:
-        print(f"Контакт з ім'ям '{name}' не знайдено.")
+        return None
 
 
-def show_phone(contacts, name):
-    if name in contacts:
-        print(f"Номер телефону '{name}': {contacts[name]}")
-    else:
-        print(f"Контакт з ім'ям '{name}' не знайдено.")
-
-
-def show_all_contacts(contacts):
-    if contacts:
-        for name, phone in contacts.items():
-            print(f"{name}: {phone}")
-    else:
-        print("Записник контактів порожній.")
+def show_all(contacts):
+    return contacts
 
 
 def main():
     contacts = {}
-    print("Welcome to the assistant bot! Введіть HELLO щоб розпочати роботу з Ботом")
+    print("Welcome to the assistant bot! Type [hello] to get started")
+
     while True:
         user_input = input("Enter a command: ")
-        command, args = parse_input(user_input)
+        command, *args = parse_input(user_input)
 
-        if command == "exit" or command == "close":
+        if command in ["close", "exit"]:
             print("Good bye!")
-            sys.exit()
+            break
+
         elif command == "hello":
-            print(
-                "How can I help you?\n Add Name Phone \n Change Name Phone \n Phone Name \n All \n Exit - Close \n"
-            )
+            print("How can I help you?")
+            print("\n Add  \n Change  \n Phone \n All \n Exit - Close \n")
+
         elif command == "add":
-            if len(args) != 2:
-                print(
-                    "Неправильний формат- Використовуйте: add [ім'я] [номер телефону]"
-                )
-            else:
-                name, phone = args
-                add_contact(contacts, name, phone)
+            try:
+                print(add_contact(args, contacts))
+            except ValueError:
+                print("There must be two arguments => add [name] [phone]")
+
         elif command == "change":
-            if len(args) != 2:
-                print(
-                    "Неправильний формат - Використовуйте: change [ім'я] [новий номер телефону]"
-                )
-            else:
-                name, new_phone = args
-                change_contact(contacts, name, new_phone)
+            try:
+                print(change_contact(args, contacts))
+            except ValueError:
+                print("There must be two arguments => change [name] [phone]")
+
         elif command == "phone":
-            if len(args) != 1:
-                print("Неправильний формат - Використовуйте: phone [ім'я]")
-            else:
-                name = args[0]
-                show_phone(contacts, name)
+            try:
+                result = show_phone(args, contacts)
+                if result is not None:
+                    print(f"Phone number for contact {args[0]}: {result}")
+                else:
+                    print("Contact not found.")
+            except IndexError:
+                print("There must be => phone [name]")
+
         elif command == "all":
-            show_all_contacts(contacts)
+            print(show_all(contacts))
+
         else:
             print("Invalid command.")
 
